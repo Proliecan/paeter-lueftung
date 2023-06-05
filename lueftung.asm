@@ -118,9 +118,15 @@ validation:
 	        ;was passiert wenn timer vorbei
 
 	startTimer:
-	mov tl0, #0c0h ; working #0C0h 
+	MOV A, R7
+   	Mov B, #60h
+   	MUL AB ; Minuten * 60 Sekunden = Sekunden
+   	MOV B, #0xC3 ; Quarzfrequenz 12 MHz
+        MUL AB ; Wert in A * R1
+   	MOV R7, A
+    	MOV TL0, R7 ; Stelle den Timer-Wert für Minuten und Sekunden ein
 	mov th0, #0c0h ; working #0C0h 
-	setb tr0 ; startet timer
+   	SETB TR0 ; Starte den Timer
 	ajmp validation
 	;set speed --> 0
 	;jump to next position --> if button is pressed 
