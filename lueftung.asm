@@ -85,7 +85,7 @@ validation:
 		mov c, ipb
 		jnc pausereleased
 			; pause newly pressed
-			; TODO: Increase pause timer by 30 to a maximum of 120
+			; TODO: Increase pause timer by 30 to a maximum of 120 minutes
 			setb ppb
 			
 			mov waitingStatus, 1
@@ -110,28 +110,6 @@ validation:
 			; pause newly released
 			clr ppb
 	endpause:
-	jnb tf0 , endtimer
-	jmp timerinterrupt
 	ret
 
-	timerinterrupt: 
-		mov waitingStatus, 0
-	        ;was passiert wenn timer vorbei
-
-	startTimer:
-	MOV A, R7
-   	Mov B, #60h
-   	MUL AB ; Minuten * 60 Sekunden = Sekunden
-   	MOV B, #0xC3 ; Quarzfrequenz 12 MHz
-        MUL AB ; Wert in A * R1
-   	MOV R7, A
-    	MOV TL0, R7 ; Stelle den Timer-Wert für Minuten und Sekunden ein
-	mov th0, #0c0h ; working #0C0h 
-   	SETB TR0 ; Starte den Timer
-	ajmp endtimer
-	;set speed --> 0
-	;jump to next position --> if button is pressed 
-
-endtimer:
-	ret
 end
