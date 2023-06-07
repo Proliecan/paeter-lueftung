@@ -89,6 +89,8 @@ validation:
 			; TODO: Increase pause timer by 30 to a maximum of 120 minutes
 			inc r3
 
+			call start_timer
+
 			; check if r3 > 4 then set to 4
 			cjne r3, #5d, endpause
 			; too much pause
@@ -102,9 +104,12 @@ validation:
 			clr ppb
 			ljmp endpause
 
-		start_timer:
-			setb TR0
+		
 	endpause:
+	ret
+
+start_timer:
+	setb TR0
 	ret
 
 end
