@@ -23,6 +23,9 @@
 org 00h
 start:
 	ljmp init
+org 0xb
+	call timerInterrupt
+	reti
 
 org 20h
 init:
@@ -110,6 +113,21 @@ validation:
 
 start_timer:
 	setb TR0
+	ret
+
+
+timerinterrupt:		; 2ms have passed
+	djnz r0, endTimerInterrupt
+second:			; 1s has passed
+	mov r0, #32h		; #50d auf einmal = #50h?!?!?!?! BUGS GO BRRRR (^o^)
+	djnz r1, endTimerInterrupt
+minute:			; 1min has passed
+	mov r1, #60d
+	djnz r2, endTimerInterrupt
+halfhour:		; 30min have passed
+	mov r2, #30d
+	; half an hour has passed
+endTimerInterrupt:
 	ret
 
 end
