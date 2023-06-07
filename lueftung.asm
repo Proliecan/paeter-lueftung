@@ -51,10 +51,22 @@ init:
 	o4 equ p1.6
 	od equ p1.7
 
+	timeInterval equ 40h
+	maxTime equ 41h
+	waitingStatus equ 42h
+	;tmp equ 43h
 	mov p0, #00h
 	mov p1, #00h
 	mov p2, #00h
+	;mov p3, #0b
+	mov timeInterval, #1eh
+	mov maxtime,#78h
+	mov waitingStatus, 0
 
+	; initialize timer parameters
+	mov ie, #10010010b ; timer freischalten
+	mov tmod, #00000010b ; mode des timers 2 = auto reload
+	mov r7, #00h ; 0 minutes
 
 cycle:
 	call validation
@@ -73,14 +85,49 @@ validation:
 		jnc pausereleased
 			; pause newly pressed
 			; TODO: Increase pause timer by 30 to a maximum of 120
-			inc r6 ;DEBUG
 			setb ppb
+			
+			mov waitingStatus, 1
+			; read value from register r7
+			;mov tmp, r7
+			mov A, r7
+			add A , timeInterval
+			cjne A, maxtime, not_equal
+			not_equal:
+				jc less_than
+			greater_than:
+				mov r7, 0
+				; todo: timer stop
+				
+			less_than:
+				mov r7, A
+				; start timer
+				Call starttimer
+			
 			jmp endpause
 		pausereleased:
 			; pause newly released
 			clr ppb
 	endpause:
-
+	jnb tf0 , validation
+	jmp timerinterrupt
 	ret
 
+	timerinterrupt: 
+		mov waitingStatus, 0
+	        ;was passiert wenn timer vorbei
+
+	startTimer:
+	MOV A, R7
+   	Mov B, #60h
+   	MUL AB ; Minuten * 60 Sekunden = Sekunden
+   	MOV B, #0xC3 ; Quarzfrequenz 12 MHz
+        MUL AB ; Wert in A * R1
+   	MOV R7, A
+    	MOV TL0, R7 ; Stelle den Timer-Wert für Minuten und Sekunden ein
+	mov th0, #0c0h ; working #0C0h 
+   	SETB TR0 ; Starte den Timer
+	ajmp validation
+	;set speed --> 0
+	;jump to next position --> if button is pressed 
 end
