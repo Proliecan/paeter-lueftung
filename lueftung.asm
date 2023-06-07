@@ -10,7 +10,7 @@
 ;    Eingabe:
 ;	p0.0:		Pausentaste
 ;	p0.1:		Modustaste
-;	p0.2 - p0.5:	Geschwindigkeiten 1-4 (geringste zählt)
+;	p0.2 - p0.5:	Geschwindigkeiten 1-4 (geringste zählt) (setzt Pausendauer wieder auf 0min)
 ;	p0.6:		default-Richtung (statischer Dipswitch auf dem Board)
 ;    Ausgabe:
 ;	p1.0:		Pause LED
@@ -23,6 +23,9 @@
 org 00h
 start:
 	ljmp init
+org 0xb
+	call timerInterrupt
+	reti
 
 org 20h
 init:
@@ -55,6 +58,19 @@ init:
 	mov p1, #00h
 	mov p2, #00h
 
+	; init second timer
+	mov r0, #50d	; 50 * 2ms = 1s
+	mov r1, #60d	; 60s = 1m
+	mov r2, #30d	; 30m = 1 pauseninkrement
+	mov r3, #0b	; No pause time yet
+
+	; init timer
+	mov tmod, #0000010b	; set mode
+	mov th0, #55d 		; run for 2ms untill interrupt
+	; activate interrupt
+	setb ea
+	setb et0
+
 
 cycle:
 	call validation
@@ -72,15 +88,47 @@ validation:
 		mov c, ipb
 		jnc pausereleased
 			; pause newly pressed
-			; TODO: Increase pause timer by 30 to a maximum of 120
-			inc r6 ;DEBUG
 			setb ppb
-			jmp endpause
+			; TODO: Increase pause timer by 30 to a maximum of 120 minutes
+			inc r3
+
+			call start_timer
+
+			; check if r3 > 4 then set to 4
+			cjne r3, #5d, endpause
+			; too much pause
+			mov r3, #4d
+
+			ljmp endpause
+
+
 		pausereleased:
 			; pause newly released
 			clr ppb
-	endpause:
+			ljmp endpause
 
+		
+	endpause:
+	ret
+
+start_timer:
+	setb TR0
+	ret
+
+
+timerinterrupt:		; 2ms have passed
+	djnz r0, endTimerInterrupt
+second:			; 1s has passed
+	mov r0, #32h		; #50d auf einmal = #50h?!?!?!?! BUGS GO BRRRR (^o^)
+	djnz r1, endTimerInterrupt
+minute:			; 1min has passed
+	mov r1, #60d
+	djnz r2, endTimerInterrupt
+halfhour:		; 30min have passed
+	mov r2, #30d
+	; half an hour has passed
+	; todo: decrease pause time and stop timer when necesssary, also start fans when no pause time left
+endTimerInterrupt:
 	ret
 
 end
