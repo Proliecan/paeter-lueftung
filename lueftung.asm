@@ -51,17 +51,18 @@ init:
 	o4 equ p1.6
 	od equ p1.7
 
-	timeInterval equ 40h
-	maxTime equ 41h
-	waitingStatus equ 42h
-	;tmp equ 43h
 	mov p0, #00h
 	mov p1, #00h
 	mov p2, #00h
-	;mov p3, #0b
-	mov timeInterval, #1eh
-	mov maxtime,#78h
-	mov waitingStatus, 0
+	
+
+	timeInterval equ 40h
+	maxTime equ 41h
+	waitingStatus equ 42h
+	
+	mov timeInterval, #30d
+	mov maxtime,#120d
+	mov waitingStatus, #0h
 
 	; initialize timer parameters
 	mov ie, #10010010b ; timer freischalten
@@ -109,7 +110,7 @@ validation:
 			; pause newly released
 			clr ppb
 	endpause:
-	jnb tf0 , validation
+	jnb tf0 , endtimer
 	jmp timerinterrupt
 	ret
 
@@ -127,7 +128,10 @@ validation:
     	MOV TL0, R7 ; Stelle den Timer-Wert für Minuten und Sekunden ein
 	mov th0, #0c0h ; working #0C0h 
    	SETB TR0 ; Starte den Timer
-	ajmp validation
+	ajmp endtimer
 	;set speed --> 0
 	;jump to next position --> if button is pressed 
+
+endtimer:
+	ret
 end
