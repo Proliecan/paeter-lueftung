@@ -10,7 +10,7 @@
 ;    Eingabe:
 ;	p0.0:		Pausentaste
 ;	p0.1:		Modustaste
-;	p0.2 - p0.5:	Geschwindigkeiten 1-4 (geringste zählt)
+;	p0.2 - p0.5:	Geschwindigkeiten 1-4 (geringste zählt) (setzt Pausendauer wieder auf 0min)
 ;	p0.6:		default-Richtung (statischer Dipswitch auf dem Board)
 ;    Ausgabe:
 ;	p1.0:		Pause LED
@@ -54,20 +54,20 @@ init:
 	mov p0, #00h
 	mov p1, #00h
 	mov p2, #00h
-	
 
-	timeInterval equ 40h
-	maxTime equ 41h
-	waitingStatus equ 42h
-	
-	mov timeInterval, #30d
-	mov maxtime,#120d
-	mov waitingStatus, #0h
+	; init second timer
+	mov r0, #50d	; 50 * 2ms = 1s
+	mov r1, #60d	; 60s = 1m
+	mov r2, #30d	; 30m = 1 pauseninkrement
+	mov r3, #0b	; No pause time yet
 
-	; initialize timer parameters
-	mov ie, #10010010b ; timer freischalten
-	mov tmod, #00000010b ; mode des timers 2 = auto reload
-	mov r7, #00h ; 0 minutes
+	; init timer
+	mov tmod, #0000010b	; set mode
+	mov th0, #55d 		; run for 2ms untill interrupt
+	; activate interrupt
+	setb ea
+	setb et0
+
 
 cycle:
 	call validation
@@ -85,30 +85,25 @@ validation:
 		mov c, ipb
 		jnc pausereleased
 			; pause newly pressed
-			; TODO: Increase pause timer by 30 to a maximum of 120 minutes
 			setb ppb
-			
-			mov waitingStatus, 1
-			; read value from register r7
-			;mov tmp, r7
-			mov A, r7
-			add A , timeInterval
-			cjne A, maxtime, not_equal
-			not_equal:
-				jc less_than
-			greater_than:
-				mov r7, 0
-				; todo: timer stop
-				
-			less_than:
-				mov r7, A
-				; start timer
-				Call starttimer
-			
-			jmp endpause
+			; TODO: Increase pause timer by 30 to a maximum of 120 minutes
+			inc r3
+
+			; check if r3 > 4 then set to 4
+			cjne r3, #5d, endpause
+			; too much pause
+			mov r3, #4d
+
+			ljmp endpause
+
+
 		pausereleased:
 			; pause newly released
 			clr ppb
+			ljmp endpause
+
+		start_timer:
+			setb TR0
 	endpause:
 	ret
 
