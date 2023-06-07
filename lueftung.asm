@@ -127,6 +127,7 @@ minute:			; 1min has passed
 halfhour:		; 30min have passed
 	mov r2, #30d
 	; half an hour has passed
+	; todo: decrease pause time and stop timer when necesssary, also start fans when no pause time left
 endTimerInterrupt:
 	ret
 
