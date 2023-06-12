@@ -92,7 +92,7 @@ validation:
 	anl b, #00000001b
 	xrl a,b
 	;set speed
-	call speed_validation
+	;call speed_validation
 	
 	jz endpause
 		; something has changed
@@ -141,11 +141,10 @@ halfhour:		; 30min have passed
 	; half an hour has passed
 	; todo: decrease pause time and stop timer when necesssary, also start fans when no pause time left
 	djnz r3, endtimerinterrupt
-	
-endTimerInterrupt:
 	mov r0, 0
 	clr op
 	clr TR0
+endTimerInterrupt:
 	ret
 
 speed_validation:
