@@ -76,12 +76,13 @@ init:
 	;activate the speed light1 
 	setb o1
 	;start the fan with speed 1
+	clr og1
+	clr og2
 	setb og3
 
 
 cycle:
 	call validation
-
 	ljmp cycle
 
 validation:
@@ -90,6 +91,9 @@ validation:
 	mov b, ppb
 	anl b, #00000001b
 	xrl a,b
+	;set speed
+	call speed_validation
+	
 	jz endpause
 		; something has changed
 		mov c, ipb
@@ -137,11 +141,41 @@ halfhour:		; 30min have passed
 	; half an hour has passed
 	; todo: decrease pause time and stop timer when necesssary, also start fans when no pause time left
 	djnz r3, endtimerinterrupt
-	clr TR0
-	
-	
 	
 endTimerInterrupt:
+	mov r0, 0
+	clr op
+	clr TR0
 	ret
 
+speed_validation:
+	mov A, i1b
+	cjne A, #0, set1
+	mov A, i2b
+	cjne A, #0, set2
+        mov A, i3b
+	cjne A, #0, set3
+	mov A, i4b
+	cjne A, #0, set4
+	ret
+	set1:
+	clr og1
+	clr og2
+	setb og3
+	ret
+	set2:
+	clr og1
+	setb og2
+	clr og3
+	ret
+	set3:
+	clr og1
+	setb og2
+	setb og3
+	ret
+	set4:
+	setb og1
+	clr og2
+	clr og3
+	ret
 end
