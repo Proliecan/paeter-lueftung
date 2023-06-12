@@ -18,7 +18,7 @@
 ;	p1.2:		Modus LED Blau
 ;	p1.3 - p1.6:	Geschwindigkeits LEDs  1-4
 ;	p1.7:		Laufrichtung an Motorsteuerung
-;	p2.5 - p1.7:	Geschwindigkeiten 0-4 an Motorsteuerung (binary))
+;	p2.5 - p2.7:	Geschwindigkeiten 0-4 an Motorsteuerung (binary))
 
 org 00h
 start:
@@ -53,6 +53,9 @@ init:
 	o3 equ p1.5
 	o4 equ p1.6
 	od equ p1.7
+	og1 equ p2.5
+	og2 equ p2.6
+	og3 equ p2.7
 
 	mov p0, #00h
 	mov p1, #00h
@@ -70,6 +73,10 @@ init:
 	; activate interrupt
 	setb ea
 	setb et0
+	;activate the speed light1 
+	setb o1
+	;start the fan with speed 1
+	setb og3
 
 
 cycle:
@@ -112,6 +119,7 @@ validation:
 	ret
 
 start_timer:
+	setb op
 	setb TR0
 	ret
 
