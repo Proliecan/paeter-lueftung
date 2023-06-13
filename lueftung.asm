@@ -158,7 +158,11 @@ stop_timer:
 	cjne A, #0, set3
 	mov A, speed4
 	cjne A, #0, set4
-
+stop_timer2:
+	;stop without starting fans
+	call initialize_timer
+	clr op
+	clr TR0
 	
 	endTimerInterrupt:
 	ret
@@ -178,6 +182,8 @@ speed_validation:
 	cjne A, #0, set4
 	ret
 	set1:
+	;stop timer
+	call stop_timer2
 	;set fan binary to one 
 	setb og1
 	clr og2
@@ -188,13 +194,15 @@ speed_validation:
 	clr o3
 	clr o4
 	;save speed
-	inc speed1 
+	mov speed1, 1 
 	clr speed2
 	clr speed3
 	clr speed4
 	;return
 	ret
 	set2:
+	;stop timer
+	call stop_timer2
 	;set fan binary to two 
 	clr og1
 	setb og2
@@ -205,13 +213,15 @@ speed_validation:
 	clr o3
 	clr o4
 	;save speed
-	inc speed2
+	mov speed2, 1
 	clr speed1
 	clr speed3
 	clr speed4
 	;return
 	ret
 	set3:
+	;stop timer
+	call stop_timer2
 	;set fan binary to three 
 	setb og1
 	setb og2
@@ -222,13 +232,15 @@ speed_validation:
 	setb o3
 	clr o4
 	;save speed
-	inc speed3
+	mov speed3, 1
 	clr speed1
 	clr speed2
 	clr speed4
 	;return
 	ret
 	set4:
+	;stop timer
+	call stop_timer2
 	;set fan binary to four 
 	clr og1
 	clr og2
@@ -239,7 +251,7 @@ speed_validation:
 	clr o3
 	setb o4
 	;save speed
-	inc speed4
+	mov speed4, 1
 	clr speed1
 	clr speed3
 	clr speed2
